@@ -14,7 +14,9 @@ var (
 	logger = watermill.NewStdLogger(true, true)
 )
 
-func newPubSub(t *testing.T) (message.Publisher, message.Subscriber) {
+func newPubSub(
+	t *testing.T,
+) (message.Publisher, message.Subscriber) {
 	publisher, err := eventstore.NewPublisher()
 	require.NoError(t, err)
 
@@ -24,7 +26,10 @@ func newPubSub(t *testing.T) (message.Publisher, message.Subscriber) {
 	return publisher, subscriber
 }
 
-func newPubSubWithConsumerGroup(t *testing.T, consumerGroup string) (message.Publisher, message.Subscriber) {
+func newPubSubWithConsumerGroup(
+	t *testing.T,
+	consumerGroup string,
+) (message.Publisher, message.Subscriber) {
 	publisher, err := eventstore.NewPublisher()
 	require.NoError(t, err)
 
@@ -34,7 +39,9 @@ func newPubSubWithConsumerGroup(t *testing.T, consumerGroup string) (message.Pub
 	return publisher, subscriber
 }
 
-func TestEventStorePublishSubscribe(t *testing.T) {
+func TestEventStorePublishSubscribe(
+	t *testing.T,
+) {
 	features := tests.Features{
 		ConsumerGroups:      true,
 		ExactlyOnceDelivery: true,

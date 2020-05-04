@@ -1,6 +1,8 @@
 package eventstore
 
-import "github.com/ThreeDotsLabs/watermill/message"
+import (
+	"github.com/ThreeDotsLabs/watermill/message"
+)
 
 type Publisher struct {
 }

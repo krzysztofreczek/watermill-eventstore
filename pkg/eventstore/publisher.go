@@ -18,6 +18,8 @@ func (p *Publisher) Publish(
 	return nil
 }
 
+type TestEvent struct{}
+
 func (p *Publisher) Close() error {
 	return nil
 }

@@ -40,7 +40,7 @@ func (s *Subscriber) Subscribe(
 
 	s.sub = task.Result().(client.EventStoreSubscription)
 
-	return nil, nil
+	return s.out, nil
 }
 
 func (s *Subscriber) Close() error {

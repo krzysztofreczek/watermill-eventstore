@@ -86,10 +86,28 @@ func TestEventStorePublishSubscribe(
 		Persistent:          true,
 	}
 
-	tests.TestPubSub(
+	tests.TestPublishSubscribe(
 		t,
-		features,
+		tests.TestContext{
+			TestID:   "TestPublishSubscribe",
+			Features: features,
+		},
 		newPubSub,
-		newPubSubWithConsumerGroup,
 	)
+
+	// tests.TestConcurrentSubscribe(
+	// 	t,
+	// 	tests.TestContext{
+	// 		TestID:   "TestConcurrentSubscribe",
+	// 		Features: features,
+	// 	},
+	// 	newPubSub,
+	// )
+
+	// tests.TestPubSub(
+	// 	t,
+	// 	features,
+	// 	newPubSub,
+	// 	newPubSubWithConsumerGroup,
+	// )
 }

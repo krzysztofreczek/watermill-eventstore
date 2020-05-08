@@ -1,6 +1,7 @@
 package eventstore
 
 import (
+	"encoding/json"
 	"log"
 
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -15,6 +16,7 @@ type Publisher struct {
 func NewPublisher(
 	c client.Connection,
 ) (*Publisher, error) {
+	// TODO!!! handle nil conn
 	return &Publisher{
 		c: c,
 	}, nil
@@ -26,14 +28,24 @@ func (p *Publisher) Publish(
 ) error {
 	for _, m := range messages {
 		messagePayload := m.Payload
-		messageUUID, err := uuid.FromString(m.UUID)
-		if err != nil {
 
+		// TODO!!! think of better serialization
+		messageMetadata, err := json.Marshal(m.Metadata)
+		if err != nil {
+			// TODO!!! wrap it
+			return err
 		}
 
-		// TODO!!! what about topic
-		evt := client.NewEventData(messageUUID, topic, false, messagePayload, nil)
+		messageUUID, err := uuid.FromString(m.UUID)
+		if err != nil {
+			// TODO!!! wrap it
+			return err
+		}
 
+		// TODO!!! what about type
+		evt := client.NewEventData(messageUUID, "event-type", false, messagePayload, messageMetadata)
+
+		// TODO!!! what about credentials
 		task, err := p.c.AppendToStreamAsync(topic, client.ExpectedVersion_Any, []*client.EventData{evt}, nil)
 		if err != nil {
 			// TODO!!! wrap it
@@ -46,8 +58,9 @@ func (p *Publisher) Publish(
 			return err
 		}
 
-		result := task.Result().(*client.WriteResult)
-		log.Printf("<- %+v", result)
+		_ = task.Result().(*client.WriteResult)
+		// TODO!!! remove it
+		log.Printf("sent event of UUID %s\n", messageUUID)
 	}
 
 	return nil

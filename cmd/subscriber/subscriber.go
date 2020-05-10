@@ -35,6 +35,16 @@ func main() {
 		panic(err)
 	}
 
+	for i := 0; i < 3; i++ {
+		go runSubscriberAsync(i, c)
+	}
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt)
+	<-ch
+}
+
+func runSubscriberAsync(i int, c client.Connection) {
 	subscriber, err := eventstore.NewSubscriber(c)
 	if err != nil {
 		panic(err)
@@ -70,7 +80,7 @@ func main() {
 			time.Sleep(10 * time.Millisecond)
 			return
 		case message := <-m:
-			println("message received: ", message.UUID)
+			println(i, ": message received: ", message.UUID)
 		case <-ticker.C:
 		}
 	}

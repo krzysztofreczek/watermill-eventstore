@@ -11,7 +11,7 @@ import (
 
 type Subscriber struct {
 	c   client.Connection
-	sub client.EventStoreSubscription
+	sub client.PersistentSubscription
 	out chan *message.Message
 }
 
@@ -40,30 +40,42 @@ func (s *Subscriber) Close() error {
 		return nil
 	}
 
-	return s.sub.Close()
+	// return s.sub.Close()
+
+	return nil
 }
 
 func (s *Subscriber) SubscribeInitialize(
 	topic string,
 ) error {
-	task, err := s.c.SubscribeToStreamAsync(topic, true, s.handleEventAppeared, s.handleSubscriptionDropped, nil)
+	// TODO!!! handle group name
+	task, err := s.c.CreatePersistentSubscriptionAsync(topic, "groupName", client.DefaultPersistentSubscriptionSettings, nil)
 	if err != nil {
 		// TODO!!! wrap it
 		return err
 	}
 
-	err = task.Error()
+	res := task.Result()
+	if res != nil {
+		createResult := res.(*client.PersistentSubscriptionCreateResult)
+		log.Printf("persistent subscription created with status: %+v\n", createResult)
+	}
+
+	task, err = s.c.ConnectToPersistentSubscriptionAsync(topic, "groupName", s.handleEventAppeared, s.handleSubscriptionDropped, nil, 10, true)
 	if err != nil {
 		// TODO!!! wrap it
 		return err
 	}
 
-	s.sub = task.Result().(client.EventStoreSubscription)
+	sub := task.Result().(client.PersistentSubscription)
+	log.Printf("SubscribeToStream result: %+v", sub)
+
+	s.sub = sub
 
 	return nil
 }
 
-func (s *Subscriber) handleEventAppeared(_ client.EventStoreSubscription, e *client.ResolvedEvent) error {
+func (s *Subscriber) handleEventAppeared(_ client.PersistentSubscription, e *client.ResolvedEvent) error {
 	m := message.NewMessage(
 		e.Event().EventId().String(),
 		e.Event().Data(),
@@ -83,6 +95,6 @@ func (s *Subscriber) handleEventAppeared(_ client.EventStoreSubscription, e *cli
 	return nil
 }
 
-func (s *Subscriber) handleSubscriptionDropped(_ client.EventStoreSubscription, r client.SubscriptionDropReason, err error) error {
+func (s *Subscriber) handleSubscriptionDropped(_ client.PersistentSubscription, r client.SubscriptionDropReason, err error) error {
 	return nil
 }
